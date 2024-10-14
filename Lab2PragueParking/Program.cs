@@ -47,6 +47,12 @@ class Program
                     break;
 
                 case "5":
+                    Console.WriteLine("Ange registreringsnummer för fordonet som ska tas bort:");
+                    string regToRemove = Console.ReadLine().ToUpper();
+                    garage.RemoveVehicle(regToRemove);
+                    break;
+
+                case "6":
                     exit = true;
                     Console.WriteLine("Avslutar programmet...");
                     break;
@@ -66,8 +72,10 @@ class Program
         Console.WriteLine("2. Visa parkeringsplatser");
         Console.WriteLine("3. Flytta ett fordon");
         Console.WriteLine("4. Leta efter ett fordon");
-        Console.WriteLine("5. Avsluta");
+        Console.WriteLine("5. Ta bort ett fordon");
+        Console.WriteLine("6. Avsluta");
         Console.WriteLine("Välj ett alternativ:");
+
     }
 }
 
@@ -220,4 +228,23 @@ public class ParkingGarage
 
         return -1; // Ingen ledig plats
     }
+    // Metod för att ta bort fordon
+    public void RemoveVehicle(string registrationNumber)
+    {
+        for (int i = 0; i < parkingLot.Length; i++)
+        {
+            for (int j = 0; j < parkingLot[i].Count; j++)
+            {
+                if (parkingLot[i][j].Contains(registrationNumber))
+                {
+                    parkingLot[i].RemoveAt(j); // Tar bort fordonet
+                    Console.WriteLine($"Fordon {registrationNumber} har tagits bort från plats {i + 1}.");
+                    return;
+                }
+            }
+        }
+        Console.WriteLine("Fordonet kunde inte hittas.");
+    }
+
 }
+
