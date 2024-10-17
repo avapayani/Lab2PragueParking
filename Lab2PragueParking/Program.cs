@@ -1,7 +1,8 @@
-﻿using System;
+﻿//Det är denna koden vi använder
+
+using System;
 using System.Collections.Generic;
 
-//kommentar
 class Program
 {
     static void Main(string[] args)
