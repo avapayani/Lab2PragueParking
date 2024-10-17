@@ -1,4 +1,4 @@
-﻿//Det är denna koden vi använder
+﻿//Det är denna koden vi använder nu
 
 using System;
 using System.Collections.Generic;
