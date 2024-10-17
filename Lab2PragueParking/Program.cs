@@ -1,4 +1,4 @@
-﻿//Det är denna koden vi använder nu
+//Det är denna koden vi använder
 
 using System;
 using System.Collections.Generic;
@@ -51,6 +51,7 @@ class Program
                 case "5":
                     Console.WriteLine("Ange registreringsnummer för fordonet som ska tas bort:");
                     string regToRemove = Console.ReadLine().ToUpper();
+
                     garage.RemoveVehicle(regToRemove);
                     break;
 
@@ -77,20 +78,21 @@ class Program
         Console.WriteLine("5. Ta bort ett fordon");
         Console.WriteLine("6. Avsluta");
         Console.WriteLine("Välj ett alternativ:");
-
     }
 }
 
 public class ParkingGarage
 {
-    private string[] parkingLot;
+    private List<string>[] parkingLot;
 
     public ParkingGarage()
     {
-        parkingLot = new string[100]; // Skapa en array med 100 element
-                                      
+        parkingLot = new List<string>[100]; // Initierar parkeringsplatserna
+        for (int i = 0; i < parkingLot.Length; i++)
+        {
+            parkingLot[i] = new List<string>(); // Initierar listor på varje plats
+        }
     }
-
 
     // Metod för att parkera fordon
     public void ParkVehicle(string vehicleType, string registrationNumber)
@@ -106,35 +108,29 @@ public class ParkingGarage
 
         if (vehicleType == "CAR")
         {
-            if (string.IsNullOrEmpty(parkingLot[spot])) // Kontrollera om platsen är tom
+            if (parkingLot[spot].Count == 0)
             {
-                parkingLot[spot] = vehicle;
+                parkingLot[spot].Add(vehicle);
                 Console.WriteLine($"Bil {registrationNumber} har parkerats på plats {spot + 1}.");
             }
             else
             {
-                Console.WriteLine("Platsen är redan upptagen av ett annat fordon.");
+                Console.WriteLine("Platsen är redan upptagen.");
             }
         }
         else if (vehicleType == "MC")
         {
-            if (string.IsNullOrEmpty(parkingLot[spot])) // Tom plats för en MC
+            if (parkingLot[spot].Count < 2)
             {
-                parkingLot[spot] = vehicle;
+                parkingLot[spot].Add(vehicle);
                 Console.WriteLine($"MC {registrationNumber} har parkerats på plats {spot + 1}.");
-            }
-            else if (parkingLot[spot].StartsWith("MC") && !parkingLot[spot].Contains("|")) // Redan en MC, men inte full
-            {
-                parkingLot[spot] += $"|{vehicle}"; // Lägg till den andra MC:n
-                Console.WriteLine($"MC {registrationNumber} har dubbelparkerats på plats {spot + 1}.");
             }
             else
             {
-                Console.WriteLine("Platsen är full för motorcyklar.");
+                Console.WriteLine("Platsen är redan full för motorcyklar.");
             }
         }
     }
-
 
     // Metod för att visa parkeringsplatser
     public void ShowParkingLot()
@@ -142,17 +138,16 @@ public class ParkingGarage
         Console.WriteLine("\n--- Parkeringsöversikt ---");
         for (int i = 0; i < parkingLot.Length; i++)
         {
-            if (string.IsNullOrEmpty(parkingLot[i]))
+            if (parkingLot[i].Count == 0)
             {
                 Console.WriteLine($"Plats {i + 1}: [TOM]");
             }
             else
             {
-                Console.WriteLine($"Plats {i + 1}: {parkingLot[i]}");
+                Console.WriteLine($"Plats {i + 1}: {string.Join(", ", parkingLot[i])}");
             }
         }
     }
-
 
     // Metod för att flytta fordon
     public void MoveVehicle(string registrationNumber, int newSpot)
@@ -168,85 +163,93 @@ public class ParkingGarage
         // Leta efter fordonet
         for (int i = 0; i < parkingLot.Length; i++)
         {
-            if (!string.IsNullOrEmpty(parkingLot[i]) && parkingLot[i].Contains(registrationNumber))
+            for (int j = 0; j < parkingLot[i].Count; j++)
             {
-                // Flytta fordonet om den nya platsen är ledig
-                if (string.IsNullOrEmpty(parkingLot[newSpot]) || (parkingLot[newSpot].StartsWith("MC") && !parkingLot[newSpot].Contains("|")))
+                if (parkingLot[i][j].Contains(registrationNumber))
                 {
-                    parkingLot[newSpot] = parkingLot[i]; // Flytta fordonet till den nya platsen
-                    parkingLot[i] = ""; // Ta bort fordonet från den gamla platsen
-                    Console.WriteLine($"Fordon {registrationNumber} har flyttats till plats {newSpot + 1}.");
+                    // Flytta fordonet om den nya platsen är ledig
+                    if (parkingLot[newSpot].Count == 0 || (parkingLot[newSpot][0].StartsWith("MC") && parkingLot[newSpot].Count < 2))
+                    {
+                        parkingLot[newSpot].Add(parkingLot[i][j]);
+                        parkingLot[i].RemoveAt(j);
+                        Console.WriteLine($"Fordon {registrationNumber} har flyttats till plats {newSpot + 1}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Den nya platsen är inte tillgänglig.");
+                    }
+                    return;
                 }
-                else
-                {
-                    Console.WriteLine("Den nya platsen är inte tillgänglig.");
-                }
-                return;
             }
         }
 
         Console.WriteLine("Fordonet kunde inte hittas.");
     }
 
+    // Metod för att ta bort ett specifikt fordon
+    public void RemoveVehicle(string registrationNumber)
+    {
+        for (int i = 0; i < parkingLot.Length; i++)
+        {
+            for (int j = 0; j < parkingLot[i].Count; j++)
+            {
+                if (parkingLot[i][j].Contains(registrationNumber))
+                {
+                    parkingLot[i].RemoveAt(j);
+                    Console.WriteLine($"Fordon {registrationNumber} har tagits bort från plats {i + 1}.");
+                    return;
+                }
+            }
+        }
+
+        Console.WriteLine("Fordonet kunde inte hittas.");
+    }
 
     // Metod för att leta efter ett fordon
     public void FindVehicle(string registrationNumber)
     {
         for (int i = 0; i < parkingLot.Length; i++)
         {
-            if (!string.IsNullOrEmpty(parkingLot[i]) && parkingLot[i].Contains(registrationNumber))
+            foreach (var vehicle in parkingLot[i])
             {
-                Console.WriteLine($"Fordon {registrationNumber} hittades på plats {i + 1}.");
-                return;
+                if (vehicle.Contains(registrationNumber))
+                {
+                    Console.WriteLine($"Fordon {registrationNumber} hittades på plats {i + 1}.");
+                    return;
+                }
             }
         }
 
         Console.WriteLine("Fordonet kunde inte hittas.");
     }
 
-
     // Metod för att hitta en ledig plats
     private int FindAvailableSpot(string vehicleType)
     {
-        // Först leta efter en plats med en MC som inte är full
+        // Om MC, först leta efter en plats som redan har en motorcykel men inte är full
         if (vehicleType == "MC")
         {
             for (int i = 0; i < parkingLot.Length; i++)
             {
-                if (parkingLot[i]?.StartsWith("MC") == true && !parkingLot[i].Contains("|"))
+                if (parkingLot[i].Count > 0 && parkingLot[i][0].StartsWith("MC") && parkingLot[i].Count < 2)
                 {
-                    return i; // Finns plats för en till MC
+                    return i; // Returnera den platsen
                 }
             }
         }
 
-        // Leta efter en tom plats
+        // Leta efter en helt tom plats
         for (int i = 0; i < parkingLot.Length; i++)
         {
-            if (string.IsNullOrEmpty(parkingLot[i]))
+            if (parkingLot[i].Count == 0)
             {
-                return i; // Tom plats
+                return i; // Ledig plats
             }
         }
 
         return -1; // Ingen ledig plats
     }
-
-    // Metod för att ta bort fordon
-    public void RemoveVehicle(string registrationNumber)
-    {
-        for (int i = 0; i < parkingLot.Length; i++)
-        {
-            if (!string.IsNullOrEmpty(parkingLot[i]) && parkingLot[i].Contains(registrationNumber))
-            {
-                parkingLot[i] = ""; // Töm platsen
-                Console.WriteLine($"Fordon {registrationNumber} har tagits bort från plats {i + 1}.");
-                return;
-            }
-        }
-        Console.WriteLine("Fordonet kunde inte hittas.");
-    }
-
-
 }
+
+
 
