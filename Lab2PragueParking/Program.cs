@@ -21,11 +21,22 @@ class Program
                     Console.WriteLine("Ange fordonstyp (CAR/MC):");
                     string vehicleType = Console.ReadLine().ToUpper();
 
-                    Console.WriteLine("Ange registreringsnummer:");
-                    string registrationNumber = Console.ReadLine().ToUpper();
+                    string registrationNumber;
+                    do
+                    {
+                        Console.WriteLine("Ange registreringsnummer (max 10 tecken):");
+                        registrationNumber = Console.ReadLine().ToUpper();
+
+                        if (registrationNumber.Length > 10)
+                        {
+                            Console.WriteLine("Registreringsnumret får vara max 10 tecken. Försök igen.");
+                        }
+
+                    } while (registrationNumber.Length > 10);
 
                     garage.ParkVehicle(vehicleType, registrationNumber);
                     break;
+
 
                 case "2":
                     garage.ShowParkingLot();
